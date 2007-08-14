@@ -1,27 +1,13 @@
 #import <Foundation/Foundation.h>
+#import <GraphicsServices/GraphicsServices.h>
 #import <UIKit/UIKit.h>
 #import <UIKit/UIProgressBar.h>
-#import <GraphicsServices/GraphicsServices.h>
 #import <UIKit/UITransitionView.h>
-//#import <UIKit/UINavigationItem.h>
 
-
-
-
-@interface SquidFileManager : UIView 
-{
-	UITable *_table;
-	id _delegate;
-	UIImage *fle;
-	UIImage *fldr;
-	NSFileManager *_finder;
-}
-- (id)initWithFrame:(CGRect)rect;
-- (void)setDelegate:(id)delegate;
-- (int)numberOfRowsInTable:(UITable *)table;
-- (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col;
-- (void)tableRowSelected:(NSNotification *)notification;
-@end
+#import "SquidFileManager.h"
+#import "SquidHTTPDownloader.h"
+#import "SquidAttrViewer.h"
+#import "SquidNavItem.h"
 
 @interface Squid : UIApplication {
 	struct CGRect rect;
@@ -30,24 +16,17 @@
 	UINavigationBar *nav;
 	UITransitionView *tranView;
 	SquidFileManager *sfm;
+	SquidFileManager *sfmb;
+	SquidFileManager *_current;
+	id _currentView;
+	
+	SquidAttrViewer *sav;
+	SquidNavItem *lnk;
+	SquidNavItem *lnkb;
+	SquidNavItem *attrs;
 }
-- (void)navigationBar:(UINavigationBar*)bar buttonClicked:(int)button;
-- (void)fileManager: (SquidFileManager *)manager fileSelected:(NSString *)file;
-@end
-
-@interface SquidHTTPDownloader : NSObject {
-	UIProgressBar *progressBar;
-	UIAlertSheet *sheet;
-	NSURL* _url;
-    CFReadStreamRef		_stream;
-    CFHTTPMessageRef	_request;
-	CFIndex	_progress;
-	CFIndex _total;
-}
-- (void)alertSheet:(UIAlertSheet *)aSheet buttonClicked:(int)button;
-- (void)fetch:(CFHTTPMessageRef)request;
-- (void)handleNetworkEvent:(CFStreamEventType)type;
-- (void)handleBytesAvailable;
-- (void)handleStreamComplete;
-- (void)handleStreamError;
+- (void)fileManager: (SquidFileManager *)manager doBackTrack:(NSString *)path;
+- (void)navigationItemClicked:(id)item view:(id)view;
+- (void)fileManager: (SquidFileManager *)manager fileSelected:(NSString *)file  attrs:(NSDictionary *)dict;
+- (void)fileManager: (SquidFileManager *)manager folderSelected:(NSString *)folder  attrs:(NSDictionary *)dict;
 @end
