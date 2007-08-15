@@ -6,12 +6,13 @@ LDFLAGS_FRAMEWORKSDIR=-F/Developer/SDKs/iphone/heavenly/System/Library/
 
 all:			Squid
 
-Squid:			main.o squid.o SquidFileManager.o SquidHTTPDownloader.o SquidAttrViewer.o SquidNavItem.o
+Squid:			main.o squid.o SquidFileManager.o SquidAttrViewer.o SquidNavItem.o
 			$(LD) $(LDFLAGS) -o $@ $^
-			cp Squid /Volumes/iPhone/Applications/Squid.app/Squid
 
 %.o:			%.m
 			$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+install:		cp Squid /Volumes/iPhone/Applications/Squid.app/Squid
 
 clean:
 			rm -f *.o Squid

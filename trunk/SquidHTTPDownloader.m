@@ -11,9 +11,16 @@
 	kCFStreamEventHasBytesAvailable |
 	kCFStreamEventEndEncountered |
 	kCFStreamEventErrorOccurred;
+
+	- (void)setDelegate(id)delegate
+	{
+		_delegate = delegate;
+	}
 	
-	- (void)handleNetworkEvent:(CFStreamEventType)type {
-		switch (type) {
+	- (void)handleNetworkEvent:(CFStreamEventType)type
+	{
+		switch (type)
+		{
 			case kCFStreamEventHasBytesAvailable:
 				[self handleBytesAvailable];
 				break;
@@ -27,40 +34,59 @@
 				break;
 		}
 	}
+
+	- (CFIndex)getTotalSize
+	{
+		return _total;
+	}
+
+	- (CFIndex)getProgress
+	{
+		return _progress;
+	}
 	
-	- (void)handleBytesAvailable {
+	- (void)handleBytesAvailable
+	{
 		UInt8 buffer[2048];
 		CFIndex bytesRead = CFReadStreamRead(_stream, buffer, sizeof(buffer));
 		if (bytesRead < 0)
 			[self handleStreamError];
-		else if (bytesRead) {
+		else if (bytesRead)
+		{
 			_progress += bytesRead;
+
 			CFHTTPMessageRef response = (CFHTTPMessageRef)CFReadStreamCopyProperty(_stream, kCFStreamPropertyHTTPResponseHeader);
 			if(CFHTTPMessageIsHeaderComplete(response))
 			{
 				NSString *contentLength = [(NSString *) CFHTTPMessageCopyHeaderFieldValue(response, CFSTR("Content-Length")) autorelease];
 				_total = [contentLength intValue];
 			}
-			
-			[progressBar setProgress:(((float)_progress)/(float)_total)];
+
+			if( [_delegate respondsToSelector:@selector( httpDownloader:dataReceived:size: )] )
+                                [_delegate httpDownloader:self dataReceived:buffer size:bytesRead];
 		}
 	}
 	
-	- (void)handleStreamComplete {
+	- (void)handleStreamComplete
+	{
 		CFHTTPMessageRef response = (CFHTTPMessageRef)CFReadStreamCopyProperty(_stream, kCFStreamPropertyHTTPResponseHeader);
 		CFReadStreamSetClient(_stream, 0, NULL, NULL);
 		CFReadStreamUnscheduleFromRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 		CFRelease(response);
-		[sheet dismiss];
+		if( [_delegate respondsToSelector:@selector( httpDownloader:complete: )])
+			[_delegate httpDownloader:self complete];
 	}
 	
-	- (void)handleStreamError {
+	- (void)handleStreamError
+	{
 		CFStreamError error = CFReadStreamGetError(_stream);
 		CFReadStreamSetClient(_stream, 0, NULL, NULL);
 		CFReadStreamUnscheduleFromRunLoop(_stream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 		CFReadStreamClose(_stream);
 		CFRelease(_stream);
 		_stream = NULL;
+                if( [_delegate respondsToSelector:@selector( httpDownloader:error: )])
+                        [_delegate httpDownloader:self error];
 	}
 	
 	- (void)fetch:(CFHTTPMessageRef)request
@@ -68,29 +94,43 @@
 		CFHTTPMessageRef old;
 		CFReadStreamRef stream;
 		CFStreamClientContext ctxt = {0, self, NULL, NULL, NULL};
+		
 		old = _request;
 		_request = (CFHTTPMessageRef)CFRetain(request);
+		
 		if (old)
 			CFRelease(old);
+		
 		stream = CFReadStreamCreateForHTTPRequest(kCFAllocatorDefault, _request);
-		if (!stream) {
+		
+		if (!stream)
+		{
 			return;
 		}
 		
 		CFReadStreamSetProperty(stream, kCFStreamPropertyHTTPAttemptPersistentConnection, kCFBooleanTrue);
-		if (!CFReadStreamSetClient(stream, kNetworkEvents, ReadStreamClientCallBack, &ctxt)) {
+		
+		if (!CFReadStreamSetClient(stream, kNetworkEvents, ReadStreamClientCallBack, &ctxt))
+		{
 			CFRelease(stream);
 			return;
 		}
 		
+		if( [_delegate respondsToSelector:@selector( httpDownloader:started: )])
+                        [_delegate httpDownloader:self started];
+
 		CFReadStreamScheduleWithRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
-		if (!CFReadStreamOpen(stream)) {
+		
+		if (!CFReadStreamOpen(stream))
+		{
 			CFReadStreamSetClient(stream, 0, NULL, NULL);
 			CFReadStreamUnscheduleFromRunLoop(stream, CFRunLoopGetCurrent(), kCFRunLoopCommonModes);
 			CFRelease(stream);
 			return;
 		}
-		if (_stream) {
+		
+		if (_stream)
+		{
 			CFReadStreamClose(_stream);
 			CFRelease(_stream);
 		}
@@ -98,45 +138,44 @@
 		
 	}
 	
-	- (void)alertSheet:(UIAlertSheet *)aSheet buttonClicked:(int)button
-	{
-		[aSheet dismiss];
-	}
-	
 	-(id)initWithUrl:(NSString *)url
 	{
-		NSArray* buttons = [NSArray arrayWithObjects:@"Dismiss",nil];
-		sheet =	[[UIAlertSheet alloc] initWithFrame: CGRectMake(0.0f, 0.0f, 320.0f, 200.0f)];
-		[sheet setDelegate:self];
-		[sheet popupAlertAnimated:YES];
-						
-		progressBar = [[UIProgressBar alloc] initWithFrame:CGRectMake(10.0f, 20.0f, 260.0f, 20.0f)];
-		[progressBar setProgress:0.0f];
-		[progressBar setStyle:0];
-		[sheet addSubview:progressBar];
-		[sheet setBodyText:@"text"];
-		[sheet popupAlertAnimated:YES];
+
+		_progress = 0;
+		_total = 0;
 		
 		CFHTTPMessageRef request;
 
-		if (!url || ![url length]) {
+		if (!url || ![url length])
+		{
 			return;
 		}
+
 		if (![url hasPrefix: @"http://"] && ![url hasPrefix: @"https://"])
 			url = [NSString stringWithFormat: @"http://%@", url];
-		if (_url) {
+
+		if (_url)
+		{
 			[_url release];
 			_url = NULL;
 		}
+
 		_url = [NSURL URLWithString: url];
-		if (!_url) {
+
+		if (!_url)
+		{
 			return;
 		}
+
 		[_url retain];
+
 		request = CFHTTPMessageCreateRequest(kCFAllocatorDefault, CFSTR("GET"), (CFURLRef)_url, kCFHTTPVersion1_1);
-		if (!request) {
+
+		if (!request)
+		{
 			return;
 		}
+
 		[self fetch: request];
 		CFRelease(request);
 		return self;
