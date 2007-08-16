@@ -7,14 +7,14 @@
 	UIAlertSheet *sheet;
 	NSURL* _url;
 	CFReadStreamRef	_stream;
-    	CFHTTPMessageRef _request;
+	CFHTTPMessageRef _request;
 	CFIndex	_progress;
 	CFIndex _total;
 	id _delegate;
 }
 - (CFIndex)getTotalSize;
 - (CFIndex)getProgress;
-- (void)setDelegate(id)delegate;
+- (void)setDelegate:(id)delegate;
 - (void)alertSheet:(UIAlertSheet *)aSheet buttonClicked:(int)button;
 - (void)fetch:(CFHTTPMessageRef)request;
 - (void)handleNetworkEvent:(CFStreamEventType)type;

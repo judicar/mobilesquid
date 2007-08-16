@@ -106,6 +106,7 @@
 {
 	[nav pushNavigationItem:attrs];
 	[nav showBackButton:YES animated:YES];
+	[sav setFile:file attrs:dict];
 	[tranView transition:1 fromView:manager toView:sav];
 	[sav becomeFirstResponder];
 }
