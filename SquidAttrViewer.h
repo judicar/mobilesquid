@@ -3,20 +3,12 @@
 #import <UIKit/UIKit.h>
 #import <UIKit/UITextLabel.h>
 
-@interface MyTextLabel : UITextLabel
-{
-
-}
-- (id)initWithFrame: (struct CGRect) aRect;
-- (void)drawRect:(CGRect)rect;
-- (void)drawContentsInRect:(CGRect)rect;
-@end
+#import "UITextLabelSubclass.h"
 
 @interface SquidAttrViewer : UIView 
 {
 	id _delegate;
-	UITextLabel *_date;
-	MyTextLabel *_test;
+	UITextLabelSubclass *_date;
 }
 - (id)initWithFrame:(CGRect)rect;
 - (void)setDelegate:(id)delegate;
