@@ -75,7 +75,7 @@
 - (UITableCell *)table:(UITable *)table cellForRow:(int)row column:(UITableColumn *)col {
 
 	UIImageAndTextTableCell *c = [[UIImageAndTextTableCell alloc] init];
-
+ 
 	if ( row == 0 )
 	{
 		[c setTitle:[NSString stringWithFormat:@"%@\n", @" .."]];
@@ -87,22 +87,16 @@
 		if ( [[fa objectForKey:NSFileType] isEqualToString:@"NSFileTypeDirectory"] )
 		{
 			[c setImage:_folderIcon];
-			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 10.0f, 0.0f, 0.0f)];
+			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 10.0f, 320.0f, 10.0f)];
 			[lbl setText:[NSString stringWithFormat:@"%@\n", [cwd objectAtIndex:row-1]]];
 			[c addSubview:lbl];
 			[lbl sizeToFit];
 		}
 		else {
 			[c setImage:_fileIcon];
-			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 0.0f, 0.0f, 0.0f)];
-			[lbl setText:[NSString stringWithFormat:@"%@\n", [cwd objectAtIndex:row-1]]];
-			
-			UITextLabel *sz = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f,20.0f,0.0f,0.0f)];
-			[sz setText:[NSString stringWithFormat:@"%@ bytes", [fa objectForKey:NSFileSize]]];
-			
+			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 10.0f, 320.0f, 10.0f)];
+			[lbl setText:[NSString stringWithFormat:@"%@\n", [cwd objectAtIndex:row-1]]];			
 			[c addSubview:lbl];
-			[c addSubview:sz];
-			[sz sizeToFit];
 			[lbl sizeToFit];
 		}
 	}
