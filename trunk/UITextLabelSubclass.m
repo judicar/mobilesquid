@@ -2,35 +2,39 @@
 
 @implementation UITextLabelSubclass
 
-- (id)initWithFrame: (struct CGRect) aRect
+- (id)initWithFrame: (struct CGRect) rect
 {
-	return [super initWithFrame: aRect];
+	_fontName = @"CourierNew";
+	_fontSize = 15.0f;
+	_c = {.1, .1, .1, 1};
+	_cW = 7;
+	_cH = 18;
+	context = UICurrentContext();
+	float _w = rect.size.width;
+	float _h = rect.size.height;
+	transform = CGAffineTransformMake(1, 0, 0, -1, 0, _h/30);
+	
+	return [super initWithFrame: rect];
+}
+
+- (void)setFont:(NSString *)font
+{
+	_fontName = font;
+}
+
+- (void)setFontSize:(float)size
+{
+	_fontSize = size;
 }
 
 - (void)drawContentsInRect:(CGRect)rect
 {
-  CGContextRef context = UICurrentContext();
-  
-  float w = rect.size.width;
-  float h = rect.size.height;
-  
-  CGAffineTransform transform = CGAffineTransformMake(1, 0, 0, -1, 0, h/30);
-
-  CGContextSelectFont(context, "CourierNew", 15.0f,
-                      kCGEncodingMacRoman);
-  CGContextSetRGBFillColor(context, .1, .1, .1, 1);
-
-  CGContextSetTextDrawingMode(context, kCGTextFill);
-  CGContextSetTextMatrix(context, transform);
-  NSString *s = [self text];
-  char *c = [s UTF8String];
-  int i=0;
-  for(i=0;i < [s length]; i++)
-  {
-	if(c[i] == 0)
-		c[i] = ' ';
-	CGContextShowTextAtPoint(context,7*i, 18 , &c[i], 1);
-  }
+	CGContextSelectFont(context, [_fontName UTF8String], _fontSize, kCGEncodingMacRoman);
+	CGContextSetRGBFillColor(context, _c[0], _c[1], _c[2], _c[3]);
+	CGContextSetTextDrawingMode(context, kCGTextFill);
+	CGContextSetTextMatrix(context, transform);
+	NSString *s = [self text];
+	CGContextShowTextAtPoint(context, _cW, _cH , [s UTF8String], [s length]);
 }
 
 @end
