@@ -11,7 +11,7 @@
 	CGAffineTransform transform;
 	int _cW, _cH;
 }
-
+- (void)setFontName:(NSString *)font;
 - (void)setFontSize:(float)size;
 - (id)initWithFrame: (struct CGRect) rect;
 // - (void)drawRect:(CGRect)rect;
