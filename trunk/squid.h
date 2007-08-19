@@ -17,8 +17,8 @@
 	UITransitionView *tranView;
 	SquidFileManager *sfm;
 	SquidFileManager *sfmb;
-	SquidFileManager *_current;
-	id _currentView;
+//	SquidFileManager *_current;
+	id _current;
 	
 	SquidAttrViewer *sav;
 	SquidNavItem *lnk;
