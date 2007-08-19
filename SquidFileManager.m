@@ -1,4 +1,7 @@
 #import "SquidFileManager.h"
+#import "UITextLabelSubclass.h"
+
+
 
 @implementation SquidFileManager 
 - (id)initWithFrame:(struct CGRect)frame{
@@ -27,8 +30,9 @@
 		[_finder changeCurrentDirectoryPath:@"/"];
 
 		_delegate = nil;
-
+		[_table setRowHeight:36.0f];
 		[self addSubview: _table];
+		
 		[_table reloadData];
 	}
 	return self;
@@ -83,22 +87,14 @@
 	else {
 		NSArray *cwd = [_finder directoryContentsAtPath:[_finder currentDirectoryPath]];
 		NSDictionary *fa = [_finder fileAttributesAtPath:[NSString stringWithFormat:@"%@/%@", [_finder currentDirectoryPath], [cwd objectAtIndex:row-1]] traverseLink:YES];
-		UITextLabel *lbl;
 		if ( [[fa objectForKey:NSFileType] isEqualToString:@"NSFileTypeDirectory"] )
 		{
 			[c setImage:_folderIcon];
-			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 10.0f, 320.0f, 10.0f)];
-			[lbl setText:[NSString stringWithFormat:@"%@\n", [cwd objectAtIndex:row-1]]];
-			[c addSubview:lbl];
-			[lbl sizeToFit];
 		}
 		else {
 			[c setImage:_fileIcon];
-			lbl = [[UITextLabel alloc] initWithFrame:CGRectMake(45.0f, 10.0f, 320.0f, 10.0f)];
-			[lbl setText:[NSString stringWithFormat:@"%@\n", [cwd objectAtIndex:row-1]]];			
-			[c addSubview:lbl];
-			[lbl sizeToFit];
 		}
+		[c setTitle:[NSString stringWithFormat:@"%@", [cwd objectAtIndex:row-1]]];
 	}
 	return c;
 }

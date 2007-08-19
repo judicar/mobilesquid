@@ -58,46 +58,29 @@
 
 - (void)fileManager: (SquidFileManager *)manager doBackTrack:(NSString *)path
 {	
-	if ( [manager isEqual:sfm] )
-	{
-		_current = sfmb;
-		[sfmb changePath:path];
-		[tranView transition:2 toView:sfmb];
-
-	}
-	else if ( [manager isEqual:sfmb] )
-	{
-		_current = sfm;
-		[sfm changePath:path];
-		[tranView transition:2 toView:sfm];
-	}	
+	_current = [manager isEqual:sfm] ? sfmb : sfm;
+	[_current changePath:path];
+	[tranView transition:2 toView:_current];
 }
 
 - (void)fileManager: (SquidFileManager *)manager folderSelected:(NSString *)folder attrs:(NSDictionary *)dict
 {	
-	if ( [manager isEqual:sfm] )
-	{
-		_current = sfmb;
-		[sfmb changePath:folder];
-		[tranView transition:1 toView:sfmb];
+	_current = [manager isEqual:sfm] ? sfmb : sfm;
+	[_current changePath:folder];
+	[tranView transition:1 toView:_current];
 
-	}
-	else if ( [manager isEqual:sfmb] )
-	{
-		_current = sfm;
-		[sfm changePath:folder];
-		[tranView transition:1 toView:sfm];
-	}
 }
 
 
 - (void)navigationItemClicked:(id)item view:(id)view;
 {
-		if ( [_currentView isEqual:sav])
-		{
-			[tranView transition:2 toView: view];
+
+		if ( [_current isEqual:sav])
+		{	
+			[sfm changePath:[[NSFileManager defaultManager] currentDirectoryPath]];
+			[tranView transition:2 toView: sfm];
 		}	
-		_currentView = view;
+		_current = view;
 
 		//SquidHTTPDownloader *d = [[SquidHTTPDownloader alloc] initWithUrl:@"www.cnn.com"];
 }
