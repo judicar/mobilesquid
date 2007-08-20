@@ -1,5 +1,138 @@
 #import "SquidAttrViewer.h"
 
+@implementation UIKeyboardImpl (DisableFeatures)
+
+- (BOOL)autoCapitalizationPreference
+{
+  return false;
+}
+
+- (BOOL)autoCorrectionPreference
+{
+  return false;
+}
+
+@end
+
+@implementation EditingKeyboard
+- (id)initWithFrame:(struct CGRect)fp8
+{
+	_translationUp = [[UITransformAnimation alloc] initWithTarget: self];
+	_translationDwn = [[UITransformAnimation alloc] initWithTarget: self];
+	
+	struct CGAffineTransform _up = CGAffineTransformMakeTranslation(0, -240.0f);
+	struct CGAffineTransform _down = CGAffineTransformMakeTranslation(0, 240.0f);
+	
+	[_translationUp setStartTransform: _down];
+	[_translationUp setEndTransform: _up];
+	
+	[_translationDwn setStartTransform: _up];
+	[_translationDwn setEndTransform: _down];
+	
+	[super initWithFrame:fp8];
+	return self;
+}
+
+
+- (void)dealloc
+{
+	[_translationUp release];
+	[_translationDwn release];
+	[super dealloc];
+}
+
+- (void)show
+{
+	UIAnimator *_a = [[UIAnimator alloc] init];
+	[_a addAnimation:_translationUp withDuration:2.0f start:YES];
+}
+
+- (void)hide
+{
+	UIAnimator *_a = [[UIAnimator alloc] init];
+	[_a addAnimation:_translationDwn withDuration:2.0f start:YES];
+}
+
+@end
+
+
+
+@implementation EditField
+- (id)initWithFrame:(struct CGRect)fp8
+{
+	[super initWithFrame:fp8];
+	[self setEditable:NO];
+	[self setTextSize:15.0f];
+	[self setScrollingEnabled:NO];
+	return self;
+}
+
+
+- (id)hitTest:(struct CGPoint)fp8 forEvent:(struct __GSEvent *)fp16
+{
+	if( CGRectContainsPoint([super visibleRect], fp8) )
+	{
+		if( [_delegate respondsToSelector:@selector( getKeyboard: )] )
+		{
+			[self setEditable:YES];
+			[[_delegate getKeyboard:self] show];
+		}
+	}
+	return [super hitTest:fp8 forEvent:fp16];
+}
+
+
+- (BOOL)isDirty
+{
+
+	return _dirty;
+}
+
+- (void)setDirty:(BOOL)dirty
+{
+	_dirty = dirty;
+}
+
+- (BOOL)respondsToSelector:(SEL)aSelector
+{
+
+  return [super respondsToSelector:aSelector];
+}
+
+- (void)forwardInvocation:(NSInvocation *)anInvocation
+{
+
+  [super forwardInvocation:anInvocation];
+  return;
+}
+
+- (BOOL)webView:(id)fp8 shouldDeleteDOMRange:(id)fp12
+{
+
+  return [super webView:fp8 shouldDeleteDOMRange:fp12];
+}
+
+- (BOOL)webView:(id)fp8 shouldInsertText:(id)character replacingDOMRange:(id)fp16 givenAction:(int)fp20
+{
+	char cmd = [character characterAtIndex:0];
+	
+	if ( [character characterAtIndex:0] == 10 )
+	{
+		[self setEditable:NO];
+		if( [_delegate respondsToSelector:@selector( getKeyboard: )] )
+			[[_delegate getKeyboard:self] hide];
+		return NO;
+	}
+	[self setDirty:YES];
+	if( [_delegate respondsToSelector:@selector( handleKeyboardInput: )] )
+		if ( ![_delegate handleKeyboardInput:character] )
+			return NO;
+			
+	return [super webView:fp8 shouldInsertText:character replacingDOMRange:fp16 givenAction:fp20];
+}
+@end
+
+
 @implementation SquidPermCol 
 - (id)initWithFrameAndDelegate:(struct CGRect)frame delegate:(id)delegate
 {
@@ -173,14 +306,15 @@
 
 	_view = [[UIView alloc] initWithFrame:frame];
 	
-	_mdatelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,20,290,20) delegate:self];
-	_cdatelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,40,290,20) delegate:self];
-	_sizelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,60,290,20) delegate:self];
-	_fnlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,0,290,20) delegate:self];
-	_pathlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,80,290,20) delegate:self];
-	_ownerlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,100,290,20) delegate:self];
-	_grouplabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,120,290,20) delegate:self];
-	_perms = [[SquidPermEditor alloc] initWithFrameAndDelegate:CGRectMake(0,140,200,100) delegate:self];
+	_mdatelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,40,290,20) delegate:self];
+	_cdatelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,60,290,20) delegate:self];
+	_sizelabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,80,290,20) delegate:self];
+	_fnlabel = [[EditField alloc] initWithFrame: CGRectMake(0,0,290,40)];
+	_pathlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,100,290,20) delegate:self];
+	_ownerlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,120,290,20) delegate:self];
+	_grouplabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,140,290,20) delegate:self];
+	_perms = [[SquidPermEditor alloc] initWithFrameAndDelegate:CGRectMake(0,160,200,100) delegate:self];
+	_keyboard = [[EditingKeyboard alloc] initWithFrame:CGRectMake(0,410.0f,320.0f,250.0f)];
 	
 	[_view addSubview:_mdatelabel];
 	[_view addSubview:_cdatelabel];
@@ -190,13 +324,13 @@
 	[_view addSubview:_ownerlabel];	
 	[_view addSubview:_grouplabel];
 	[_view addSubview:_perms];
-
+	
 	_applyUp = [UIImage imageNamed:@"applyup.png"];
 	_applyDwn = [UIImage imageNamed:@"applyup.png"];
 	
 	_apply = [[UIPushButton alloc] initWithTitle:@"" autosizesToFit:NO];
 	
-	[_apply setFrame: CGRectMake(0.0, 230.0, 100.0, 50.0)];
+	[_apply setFrame: CGRectMake(0.0, 250.0, 100.0, 50.0)];
 	[_apply setDrawsShadow: YES];
 	[_apply setEnabled:YES];
 	[_apply setStretchBackground:NO];
@@ -205,10 +339,12 @@
 	[_apply addTarget:self action:@selector(applyButton:) forEvents:1];
 
 	[_view addSubview:_apply];
-
-	[_fnlabel setFontSize:15.0f];
-	[_fnlabel setFGColor:0.0f g:0.0f b:0.0f a:1.0f];
 	
+
+	[_fnlabel setDelegate:self];
+	[_keyboard setTapDelegate:self];
+	[_view addSubview:_keyboard];
+
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
 	float _fc[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 	CGColorRef fg = CGColorCreate(colorSpace, _fc);
@@ -217,9 +353,54 @@
 	return self;
 }
 
+- (BOOL)handleKeyboardInput:(id)character
+{
+	//char c = [character characterAtIndex:0];
+	//[_mdatelabel setText:[NSString stringWithFormat:@"%d",c]];
+	char cmd = [character characterAtIndex:0];
+
+	return YES;
+}
+
+- (BOOL)fileManager:(NSFileManager *)manager shouldProceedAfterError:(NSDictionary *)errorDict
+{
+
+	return NO;
+}
+
+- (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path
+{
+
+}
+
 - (void)applyButton:(UIPushButton *)button
 {
 	[_perms applyChanges];
+	
+	if( [_fnlabel isDirty] )
+	{
+		NSFileManager *fm = [NSFileManager defaultManager];
+		NSString *current = [NSString stringWithString:[_path stringByDeletingLastPathComponent]];
+		NSString *newFile = [NSString stringWithFormat:@"%@/%@", current, [_fnlabel text]];
+		if( ![fm fileExistsAtPath:newFile] )
+		{
+			if( [fm fileExistsAtPath:_path] )
+			{
+				/* Workaround since move and copy are broken in NSFileManager it seems */
+				NSFileHandle *_reader = [NSFileHandle fileHandleForReadingAtPath:_path];
+				NSMutableDictionary *d = [[NSMutableDictionary alloc] initWithDictionary:[fm fileAttributesAtPath:_path traverseLink:YES]];
+				[d setObject:[NSDate date] forKey:NSFileModificationDate];
+				[fm createFileAtPath:newFile contents:[_reader readDataToEndOfFile] attributes:d];
+				if( [fm fileExistsAtPath:newFile] )
+				{
+						[fm removeFileAtPath:_path handler:self];
+						[self setFile:newFile attrs:[fm fileAttributesAtPath:newFile traverseLink:YES]];
+				}
+				
+			}
+			
+		}
+	}
 }
 
 - (void)processChanges:(NSDictionary *)dict
@@ -236,16 +417,18 @@
 	[num release];
 }
 
-- (void)fileEditPermissions
+- (void)hideKeyboard:(id)view
 {
-	NSArray* buttons = [NSArray arrayWithObjects:@"Button1",@"Button2",nil];
-	UIAlertSheet* sheet = [[UIAlertSheet alloc] 
-							  initWithTitle:@"title" 
-	                          buttons: buttons
-	 						defaultButtonIndex: 1 
-							delegate:self
-							 context:nil];
-						[sheet popupAlertAnimated:FALSE];
+	[_keyboard hide];
+}
+- (void)showKeyboard:(id)view
+{
+	[_keyboard show];
+}
+
+- (UIKeyboard *)getKeyboard:(id)view
+{
+	return _keyboard;
 }
 
 - (void)dealloc
@@ -302,7 +485,7 @@
 	[_path release];
 	_path = [[NSString alloc] initWithString:path];
 	_dict = dict;
-
+	
 	NSNumber *perms = [dict objectForKey:NSFilePosixPermissions];
 	[_perms setPermissions:[perms unsignedLongValue]];
 	NSNumber *size = [dict objectForKey:NSFileSize];
@@ -338,6 +521,7 @@
 	
 	[_sizelabel setText:[NSString stringWithFormat:@"Size: %@ (%@ bytes)", str, size]];
 	[_fnlabel setText:[NSString stringWithFormat:@"%@", [path lastPathComponent]]];
+	[_fnlabel setDirty:NO];
 	[_pathlabel setText:[NSString stringWithFormat:@"Where: %@", [path stringByDeletingLastPathComponent]]];
 	[_ownerlabel setText:[NSString stringWithFormat:@"Owner: %@", [dict objectForKey:NSFileOwnerAccountName]]];
 	[_grouplabel setText:[NSString stringWithFormat:@"Group: %@", [dict objectForKey:NSFileGroupOwnerAccountName]]];

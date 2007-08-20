@@ -1,4 +1,4 @@
-CC=arm-apple-darwin-cc
+CC=/usr/local/bin/arm-apple-darwin-cc
 LD=$(CC)
 LDFLAGS	=	-ObjC -framework CoreFoundation -framework Foundation -framework UIKit -framework LayerKit \
 		-framework Coregraphics -framework CFNetwork -larmfp
