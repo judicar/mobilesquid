@@ -6,8 +6,12 @@
 #import <UIKit/UIView.h>
 #import <UIKit/UIPushButton.h>
 #import <UIKit/UICheckBox.h>
-
+#import <UIKit/UITextView.h>
+#import <UIKit/UIKeyboard.h>
 #import "UITextLabelSubclass.h"
+#import <UIKit/UITransformAnimation.h>
+#import <UIKit/UIAnimator.h>
+#import <UIKit/UIKeyboardImpl.h>
 
 typedef struct __GSEvent {
 	long i0; 
@@ -17,6 +21,19 @@ typedef struct __GSEvent {
 	long i4;
 	long i5;
 } __GSEvent;
+
+@interface EditField : UITextView {
+	BOOL _dirty;
+}
+- (void)setDirty:(BOOL)dirty;
+- (id)hitTest:(struct CGPoint)fp8 forEvent:(struct __GSEvent *)fp16;
+- (id)initWithFrame:(struct CGRect)fp8;
+- (BOOL)canBecomeFirstResponder;
+- (BOOL)respondsToSelector:(SEL)aSelector;
+- (void)forwardInvocation:(NSInvocation *)anInvocation;
+- (BOOL)webView:(id)fp8 shouldDeleteDOMRange:(id)fp12;
+- (BOOL)webView:(id)fp8 shouldInsertText:(id)character replacingDOMRange:(id)fp16 givenAction:(int)fp20;
+@end
 
 @interface SquidPermCol: UIView
 {
@@ -51,12 +68,24 @@ typedef struct __GSEvent {
 - (void)applyChanges;
 @end
 
+
+@interface EditingKeyboard : UIKeyboard
+{
+	UITransformAnimation *_translationUp;
+	UITransformAnimation *_translationDwn;
+}
+- (id)initWithFrame:(struct CGRect)fp8;
+- (void)show;
+- (void)hide;
+@end
+
+
 @interface SquidAttrViewer : UIView 
 {
 	id _delegate;
 	UITextLabelSubclass *_mdatelabel;
 	UITextLabelSubclass *_sizelabel;
-	UITextLabelSubclass *_fnlabel;
+	EditField *_fnlabel;
 	UITextLabelSubclass *_pathlabel;
 	UITextLabelSubclass *_grouplabel;
 	UITextLabelSubclass *_ownerlabel;
@@ -68,7 +97,15 @@ typedef struct __GSEvent {
 	NSDictionary *_dict;
 	NSString *_path;
 	SquidPermEditor *_perms;
+	EditingKeyboard *_keyboard;
+	NSFileHandle *_handle;
 }
+- (BOOL)fileManager:(NSFileManager *)manager shouldProceedAfterError:(NSDictionary *)errorDict;
+- (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path;
+- (BOOL)handleKeyboardInput:(id)character;
+- (void)showKeyboard:(id)view;
+- (void)hideKeyboard:(id)view;
+- (UIKeyboard *)getKeyboard:(id)view;
 - (void)applyButton:(UIPushButton *)button;
 - (void)processChanges:(NSDictionary *)dict;
 - (id)initWithFrame:(CGRect)rect;
