@@ -7,7 +7,7 @@ LDFLAGS_FRAMEWORKSDIR=-F/Developer/SDKs/iphone/heavenly/System/Library/
 
 all:			Squid
 
-Squid:			main.o squid.o SquidFileManager.o SquidAttrViewer.o SquidNavItem.o UITextLabelSubclass.o
+Squid:			main.o squid.o SquidFileManager.o SquidAttrViewer.o SquidNavItem.o UITextLabelSubclass.o AccordionView.o
 			$(LD) $(LDFLAGS) -o $@ $^
 
 %.o:			%.m
