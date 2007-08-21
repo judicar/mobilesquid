@@ -313,7 +313,7 @@
 	_pathlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,100,290,20) delegate:self];
 	_ownerlabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,120,290,20) delegate:self];
 	_grouplabel = [[UITextLabelSubclass alloc] initWithFrameAndDelegate: CGRectMake(0,140,290,20) delegate:self];
-	_perms = [[SquidPermEditor alloc] initWithFrameAndDelegate:CGRectMake(0,160,200,100) delegate:self];
+	_perms = [[SquidPermEditor alloc] initWithFrameAndDelegate:CGRectMake(90.0f,34.0f,200,100) delegate:self];
 	_keyboard = [[EditingKeyboard alloc] initWithFrame:CGRectMake(0,410.0f,320.0f,250.0f)];
 	
 	[_view addSubview:_mdatelabel];
@@ -323,7 +323,7 @@
 	[_view addSubview:_pathlabel];
 	[_view addSubview:_ownerlabel];	
 	[_view addSubview:_grouplabel];
-	[_view addSubview:_perms];
+	//[_view addSubview:_perms];
 	
 	_applyUp = [UIImage imageNamed:@"applyup.png"];
 	_applyDwn = [UIImage imageNamed:@"applyup.png"];
@@ -340,6 +340,15 @@
 
 	[_view addSubview:_apply];
 	
+	_accordion = [[AccordionView alloc] initWithFrame:CGRectMake(0, 40.0f, frame.size.width, frame.size.height - 40.0f)];
+	[_accordion setSize:4];
+	[_accordion addPanel:@"File Actions"];
+	[_accordion addPanel:@"Attributes"];
+	[[_accordion addPanel:@"Permissions"] addSubview:_perms];
+	[_accordion addPanel:@"Other"];
+	[_accordion fixup];
+	
+	[_view addSubview:_accordion];
 
 	[_fnlabel setDelegate:self];
 	[_keyboard setTapDelegate:self];
@@ -387,13 +396,21 @@
 			if( [fm fileExistsAtPath:_path] )
 			{
 				/* Workaround since move and copy are broken in NSFileManager it seems */
+				
+				//create file handle for reading.
 				NSFileHandle *_reader = [NSFileHandle fileHandleForReadingAtPath:_path];
+				//attributes of old file
 				NSMutableDictionary *d = [[NSMutableDictionary alloc] initWithDictionary:[fm fileAttributesAtPath:_path traverseLink:YES]];
+				//update modification date
 				[d setObject:[NSDate date] forKey:NSFileModificationDate];
+				//copy contents of old to new and set attributes
 				[fm createFileAtPath:newFile contents:[_reader readDataToEndOfFile] attributes:d];
+				//make sure it exists
 				if( [fm fileExistsAtPath:newFile] )
 				{
+						//remove the old file
 						[fm removeFileAtPath:_path handler:self];
+						//update the attributes view
 						[self setFile:newFile attrs:[fm fileAttributesAtPath:newFile traverseLink:YES]];
 				}
 				
@@ -445,6 +462,8 @@
 	[_apply release];
 	[_applyUp release];
 	[_applyDwn release];
+	[_accordion release];
+	
 	_delegate = nil;
 	[super dealloc];
 }
@@ -476,8 +495,8 @@
 {
 	[label setFontName:@"VerdanaBold"];
 	[label setFontSize:10.0f];
-	[label setBGColor:1.0f g:1.0f b:1.0f a:1.0f];
-	[label setFGColor:0.4f g:0.4f b:0.4f a:1.0f];
+	[label setBGColor:0.3f g:0.3f b:0.3f a:1.0f];
+	[label setFGColor:1.0f g:1.0f b:1.0f a:1.0f];
 }
 
 - (void)setFile:(NSString *)path attrs:(NSDictionary *)dict

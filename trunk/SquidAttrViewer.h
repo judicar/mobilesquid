@@ -12,6 +12,8 @@
 #import <UIKit/UITransformAnimation.h>
 #import <UIKit/UIAnimator.h>
 #import <UIKit/UIKeyboardImpl.h>
+#import "AccordionView.h"
+
 
 typedef struct __GSEvent {
 	long i0; 
@@ -99,6 +101,7 @@ typedef struct __GSEvent {
 	SquidPermEditor *_perms;
 	EditingKeyboard *_keyboard;
 	NSFileHandle *_handle;
+	AccordionView *_accordion;
 }
 - (BOOL)fileManager:(NSFileManager *)manager shouldProceedAfterError:(NSDictionary *)errorDict;
 - (void)fileManager:(NSFileManager *)fm willProcessPath:(NSString *)path;
